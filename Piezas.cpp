@@ -1,5 +1,6 @@
 #include "Piezas.h"
 #include <vector>
+
 /** CLASS Piezas
  * Class for representing a Piezas vertical board, which is roughly based
  * on the game "Connect Four" where pieces are placed in a column and 
@@ -22,6 +23,15 @@
 **/
 Piezas::Piezas()
 {
+    board.resize(3, std::vector<Piece>(4));
+    for(int i = 0; i < (int) board.size(); i++) 
+    {
+        for(int j = 0; j < (int) board[i].size(); j++)
+        {
+            board[i][j] = Blank;
+        }
+    }
+    turn = X;
 }
 
 /**
@@ -30,6 +40,15 @@ Piezas::Piezas()
 **/
 void Piezas::reset()
 {
+    board.resize(3, std::vector<Piece>(4));
+    for(int i = 0; i < (int) board.size(); i++) 
+    {
+        for(int j = 0; j < (int) board[i].size(); j++)
+        {
+            board[i][j] = Blank;
+        }
+    }
+    turn = X;
 }
 
 /**
@@ -42,7 +61,31 @@ void Piezas::reset()
 **/ 
 Piece Piezas::dropPiece(int column)
 {
-    return Blank;
+    if (column >= 4){
+        turn = (turn == X) ? O : X;
+        return Invalid;
+    }
+    
+    else if (board[2][column] != Blank)
+    {   
+        turn = (turn == X) ? O : X;
+        return Blank;
+    }
+    
+    else
+    {
+        Piece rp = turn;
+        for (int i = 0; i < BOARD_ROWS; i++)
+        {
+            if (board[i][column] == Blank)
+            {
+                board[i][column] = turn;
+                turn = (turn == X) ? O : X;
+                break;
+            }
+        }
+    return rp ;
+    }
 }
 
 /**
@@ -51,6 +94,12 @@ Piece Piezas::dropPiece(int column)
 **/
 Piece Piezas::pieceAt(int row, int column)
 {
+    if (row >= 3 || column >= 4 || row < 0 || column < 0)
+    {
+        return Invalid;
+    }
+    if(board[row][column] != Blank)
+        return board[row][column];
     return Blank;
 }
 
@@ -65,5 +114,66 @@ Piece Piezas::pieceAt(int row, int column)
 **/
 Piece Piezas::gameState()
 {
-    return Blank;
+    int xrow = 0; 
+    int xcolum = 0;
+    int orow = 0;
+    int ocolum = 0;
+    int xmax = 0;
+    int omax = 0;
+    
+    for (int i = 0; i < BOARD_ROWS; i++){
+        for (int j = 0; j < BOARD_COLS; j++){
+            if(board[i][j] == Blank)
+                return Invalid;
+        }
+    }
+    
+    //checks how many X in a row
+    for(int t = 0; t < BOARD_ROWS-1; t++){
+         if(xmax < xrow)
+            xmax = xrow;
+        for (int i = 0; i < BOARD_COLS; i++){
+            if( (board[t][i] == X) && (board[t+1][i] == X))
+            xrow += 1;
+        }
+    }
+    
+    //checks how many Y rows
+    for(int t = 0; t < BOARD_ROWS-1; t++){
+         if(omax < orow)
+            omax = orow;
+        for (int i = 0; i < BOARD_COLS; i++){
+            if( (board[t][i] == O) && (board[t+1][i] == O))
+            orow += 1;
+        }
+    }
+
+    
+    //checks how many x Colums
+    for(int i=0; i<3; i++){
+        if(xmax < xcolum)
+            xmax = xcolum;
+        xcolum = 0;
+        for(int t=0; t<4; t++)
+            if( board[i][t] == X)
+                xcolum += 1; 
+    }
+
+    
+    //check how many y Colums
+    for(int i=0; i<3; i++){
+        if(omax < ocolum)
+            omax = ocolum;
+        ocolum = 0;
+        for(int t=0; t<4; t++)
+            if( board[i][t] == O)
+                ocolum += 1; 
+    }
+    
+    if(xmax > omax)
+        return X;
+    else if(omax > xmax)
+        return O;
+    else
+        return Blank;
 }
